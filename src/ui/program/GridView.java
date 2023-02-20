@@ -1,15 +1,25 @@
+package ui.program;
+
+import data.group.MaterialCollection;
+import data.single.Material;
+import data.single.Tile;
 import freshui.program.FreshProgram;
 
-import java.awt.*;
 import java.awt.event.MouseEvent;
+import java.io.Serializable;
 
-public class DesignGrid extends FreshProgram {
+public class GridView extends FreshProgram implements Serializable {
 
     private Grid grid;
     private int prevX, prevY;
+    private MaterialCollection materials = new MaterialCollection();
 
-    public DesignGrid(){
+    public GridView(){
         grid = new Grid(20,20,40,40);
+    }
+
+    public GridView(int wid, int hei){
+        grid = new Grid(wid,hei,40,40);
     }
 
     public void init(){
@@ -23,24 +33,22 @@ public class DesignGrid extends FreshProgram {
     }
 
     public void mouseClicked(MouseEvent e){
-        if (e.isPopupTrigger()) {
+        if (!e.isPopupTrigger()) {
             // secondary click detected, effect tile
         }
     }
 
     public void mouseDragged(MouseEvent e) {
-
-        if (e.isPopupTrigger()) {
+        if (!e.isShiftDown()) {
             // secondary click detected
+
         } else {
             // primary click detected
             int currX = e.getX();
             int currY = e.getY();
             int deltaX = currX - prevX;
             int deltaY = currY - prevY;
-            int newX = grid.getX() + deltaX;
-            int newY = grid.getY() + deltaY;
-            grid.setLocation(newX, newY);
+            grid.move(deltaX, deltaY);
             prevX = currX;
             prevY = currY;
         }
@@ -66,34 +74,30 @@ public class DesignGrid extends FreshProgram {
             this.xOffset = 0;
             this.yOffset = 0;
 
-            // * instantiate grid
+            // instantiate grid
             for (int i = 0; i < this.height; i++) {
                 for (int j = 0; j < this.width; j++) {
                     grid[j][i] = new Tile(tileWidth, tileHeight);
+                    add(grid[j][i]); // Add tiles directly to program
                 }
             }
+            updateTileLocations(); // update tiles location only once
         }
 
         public void addTo(FreshProgram parent, int x, int y){
             this.xOffset = x;
             this.yOffset = y;
-
-            for (int h = 0; h < this.height-1; h++) {
-                for (int w = 0; w < this.width-1; w++) {
-                    parent.add(grid[w][h], this.tileWidth*w+xOffset,this.tileHeight*h+yOffset);
-                }
-            }
         }
 
-        public void setLocation(int x, int y){
-            this.xOffset = x;
-            this.yOffset = y;
-            updateTileLocations();
+        public void move(int deltaX, int deltaY){
+            this.xOffset += deltaX;
+            this.yOffset += deltaY;
+            updateTileLocations(); // update tiles location on move
         }
 
-        public void updateTileLocations(){
-            for (int h = 0; h < this.height-1; h++) {
-                for (int w = 0; w < this.width-1; w++) {
+        private void updateTileLocations(){
+            for (int h = 0; h < this.height; h++) {
+                for (int w = 0; w < this.width; w++) {
                     grid[w][h].setLocation(this.tileWidth*w+xOffset,this.tileHeight*h+yOffset);
                 }
             }
@@ -106,9 +110,5 @@ public class DesignGrid extends FreshProgram {
         public int getY(){
             return yOffset;
         }
-    }
-
-    public static void main(String[] args) {
-        new DesignGrid().start();
     }
 }
