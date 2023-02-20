@@ -5,14 +5,19 @@ import data.single.Material;
 import data.single.Tile;
 import freshui.program.FreshProgram;
 
+import javax.swing.*;
+import javax.swing.event.MenuKeyEvent;
+import javax.swing.event.MenuKeyListener;
+import javax.swing.filechooser.FileFilter;
 import java.awt.event.MouseEvent;
-import java.io.Serializable;
+import java.io.*;
 
 public class GridView extends FreshProgram implements Serializable {
 
     private Grid grid;
     private int prevX, prevY;
     private MaterialCollection materials = new MaterialCollection();
+    public JMenuBar menuBar = new JMenuBar();
 
     public GridView(){
         grid = new Grid(20,20,40,40);
@@ -23,8 +28,22 @@ public class GridView extends FreshProgram implements Serializable {
     }
 
     public void init(){
+        this.setName("Design Grid Project");
+
         addGrid(grid);
         addMouseListeners();
+
+        JMenu fileMenu = new JMenu("File");
+            JMenuItem load = new JMenuItem("Load");
+            fileMenu.add(load);
+            load.addActionListener(m -> loadGrid());
+
+            JMenuItem save = new JMenuItem("Save");
+            fileMenu.add(save);
+            save.addActionListener(m -> saveGrid());
+
+        menuBar.add(fileMenu);
+        add(menuBar,NORTH);
     }
 
     public void mouseMoved(MouseEvent e) {
@@ -56,6 +75,38 @@ public class GridView extends FreshProgram implements Serializable {
 
     private void addGrid(Grid g){
         g.addTo(this, 0, 0);
+    }
+
+    private void loadGrid(){
+        System.out.println("LOAD");
+    }
+
+    public void saveGrid(){
+        saveGrid(this);
+    }
+
+    public void saveGrid(GridView grid){
+        System.out.println("SAVE");
+
+        JFileChooser fileChooser = new JFileChooser();
+        fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+        fileChooser.setDialogTitle("Choose a Save Location");
+        fileChooser.setName("Choose Grid Save Location");
+        fileChooser.showDialog(null,"Choose Save Location");
+
+        File selected = null;
+        selected = fileChooser.getSelectedFile();
+
+        try {
+            FileOutputStream fileOut = new FileOutputStream(selected.getPath()+"/"+grid.getName()+".grs/");
+            ObjectOutputStream out = new ObjectOutputStream(fileOut);
+            out.writeObject(grid);
+            out.close();
+            fileOut.close();
+        } catch (IOException i) {
+            i.printStackTrace();
+        }
+
     }
 
     public class Grid {
@@ -110,5 +161,9 @@ public class GridView extends FreshProgram implements Serializable {
         public int getY(){
             return yOffset;
         }
+    }
+
+    public static void main(String[] args) {
+        new GridView().start();
     }
 }

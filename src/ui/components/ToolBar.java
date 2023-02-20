@@ -14,8 +14,6 @@ public class ToolBar extends FPanel implements Serializable {
 
         add(shape,0,0);
 
-        // TODO ADD ALL TOOLS TO BAR
-
     }
 
 }
